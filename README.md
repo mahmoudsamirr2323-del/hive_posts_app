@@ -3,7 +3,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.47.8-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.13.7-0175C2?logo=dart)](https://dart.dev)
 [![Hive](https://img.shields.io/badge/Hive-2.2.3-orange)](https://pub.dev/packages/hive)
-[![Status](https://img.shields.io/badge/Tests-14%20Passed-brightgreen)](https://github.com)
+[![Status](https://img.shields.io/badge/Tests-18%20Passed-brightgreen)](https://github.com)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 An offline-first Flutter application featuring local NoSQL storage with **Hive**, automatic offline caching, cache fallback resilience, and an independent favorites system. Built for **Fall 2026 | Section 5 (Hive Local NoSQL Storage)**.
@@ -222,20 +222,24 @@ flutter analyze
 ```bash
 flutter test
 ```
-*Result: `All 14 tests passed!`*
+*Result: `All 18 tests passed!`*
 
 ### Automated Test Breakdown:
 - **`test/models_test.dart` (5 tests):**
   - Verifies instantiation and field mapping for `Data` and `Post`.
   - Verifies `Post.fromJson` deserialization.
   - Verifies `typeId` integrity (`PostAdapter.typeId == 0`, `DataAdapter.typeId == 1`).
-- **`test/favorites_service_test.dart` (4 tests):**
+- **`test/favorites_service_test.dart` (5 tests):**
   - Verifies `isFavorite` query for saved and unsaved posts.
   - Verifies adding/removing favorites via `toggleFavorite`.
   - Verifies post cloning avoids the `HiveObject` single-box collision error.
-- **`test/post_service_test.dart` (2 tests):**
-  - Verifies offline retrieval from `postsBox` when cached data exists.
-  - Verifies throwing `'No Internet and No Cached Data'` when cache is empty and offline.
+  - Verifies favorites persistence across simulated application restarts (closing and reopening box).
+- **`test/post_service_test.dart` (5 tests):**
+  - Verifies HTTP 200 response caches to Hive and returns online posts.
+  - Verifies non-200 HTTP responses fall back to cached Hive posts.
+  - Verifies network failure (`SocketException`) falls back to cached Hive posts.
+  - Verifies network failure with empty cache throws `'No Internet and No Cached Data'`.
+  - Verifies non-200 status with empty cache throws `'No Internet and No Cached Data'`.
 - **`test/widget_test.dart` (3 tests):**
   - Verifies `PostsScreen` renders AppBar with favorites star action button.
   - Verifies `FavoritesScreen` displays the friendly `"No favorites yet"` empty state.

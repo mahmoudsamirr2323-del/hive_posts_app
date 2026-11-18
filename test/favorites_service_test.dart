@@ -91,5 +91,36 @@ void main() {
 
       await postsBox.close();
     });
+
+    test('Favorites persist after application restart (close and reopen box)', () async {
+      final post = Post(
+        id: 88,
+        title: 'Persistent Title',
+        body: 'Persistent Body',
+        userId: 9,
+      );
+      await favoritesService.toggleFavorite(post);
+      expect(favoritesService.isFavorite(88), isTrue);
+
+      // Simulate App Termination: close the box and Hive
+      await favBox.close();
+      await Hive.close();
+
+      // Simulate App Restart: re-init Hive with the same storage path and re-register adapter
+      Hive.init(tempDir.path);
+      if (!Hive.isAdapterRegistered(0)) {
+        Hive.registerAdapter(PostAdapter());
+      }
+      final reopenedBox = await Hive.openBox<Post>(FavoritesService.boxName);
+      favBox = reopenedBox; // Assign back so tearDown can clean up
+
+      final reopenedService = FavoritesService();
+      expect(reopenedService.isFavorite(88), isTrue);
+      final retrieved = reopenedService.getFavorites();
+      expect(retrieved.length, 1);
+      expect(retrieved.first.id, 88);
+      expect(retrieved.first.title, 'Persistent Title');
+      expect(retrieved.first.body, 'Persistent Body');
+    });
   });
 }
